@@ -1,0 +1,46 @@
+
+/* Home */
+
+.DSAP-Image {
+  height: min(100%, 1080px);
+  width: min(100%, 1080px);
+  background-size: cover;
+}
+
+/* .DSAP {
+  background-color: "#171717"
+} */
+
+.dna-text-area {
+  background-color: "#171717";
+  color: "#FFF";
+  width: '400px';
+  border-radius: '10px';
+  border: 0px;
+}
+
+.margin-left-right {
+  margin-left: "20px";
+  margin-right: "20px";
+}
+.color-primary {
+  color: "#181818";
+}
+
+.color-secondary {
+  color: "#1F1F1F";
+}
+
+/* General stuff */
+
+body {
+  margin: 0;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
