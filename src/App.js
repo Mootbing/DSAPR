@@ -8,6 +8,33 @@ function App() {
 
   const [removeUnnamed, setRemoveUnnamed] = useState(true);
 
+  const [dnaBad, setDnaBad] = useState(false);
+
+  const [proteinFrame, setProteinFrame] = useState("Frame 1");
+  const [queryNumber, setQueryNumber] = useState("Get Top 5 Results");
+
+  const BLAST = () => {
+    const text = document.getElementById("query-textarea").value;
+
+    if (text.replace(" ", "") === ""){
+      setDnaBad(true);
+      alert("bad dna")
+      return;
+    }
+
+    for (var char in text)
+    {
+      if (!["a", "t", "g", "c"].includes(char.toLowerCase()))
+      {
+        setDnaBad(true);
+        alert("bad dna")
+        return;
+      }
+    }
+
+    setBlasting(true);
+  }
+
   return (
     <div style={{backgroundColor: "#181818", width: "100%", height: "100%"}}>
       <MDBNavbar expand="md">
@@ -24,6 +51,9 @@ function App() {
             <MDBNavbarItem>
               <MDBNavbarLink href="https://wssp.rutgers.edu/resources" target="_blank" style={{color: "#737373"}} className="ps-5"><u>To WSSP</u></MDBNavbarLink>
             </MDBNavbarItem>
+            <MDBNavbarItem>
+              <MDBNavbarLink href="https://wssp.rutgers.edu/resources/toolboxApp" target="_blank" style={{color: "#737373"}} className="ps-5"><u>To Toolbox</u></MDBNavbarLink>
+            </MDBNavbarItem>
           </MDBNavbarNav>
         </MDBCollapse>
       </MDBNavbar>
@@ -34,14 +64,15 @@ function App() {
         <MDBContainer className="query margin-left-right">
           <MDBRow>
             <textarea
+              id="query-textarea"
               placeholder="Cropped sequences (eg: AGGAACGCTTAGGACCACC)" 
-              style={{border: "0px solid black", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", minHeight: "100px"}}
+              style={{border: !dnaBad ? "0px solid black": "3px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", minHeight: "100px"}}
             />
           </MDBRow>
           <center>
           <MDBRow className="pt-2">
             <MDBCol>
-              <MDBBtn onClick={() => setRemoveUnnamed(!removeUnnamed)} color="color-secondary shadow-0 pb-1 pt-1 mt-1 mb-0 ps-2 pe-5" style={{backgroundColor: "#1F1F1F"}}>
+              <MDBBtn onClick={() => setRemoveUnnamed(!removeUnnamed)} color="color-secondary shadow-0 pb-1 pt-1 mt-1 mb-0 ps-2 pe-5" style={{backgroundColor: removeUnnamed ? "#737373" : "#1F1F1F"}}>
                 {
                   !removeUnnamed ? 
                   <MDBIcon icon="check-circle" size="lg" className="me-2 pe-3"/>:
@@ -53,19 +84,37 @@ function App() {
             <MDBCol>
               <div className="color-background">
                 <MDBBtn className='pt-1 mb-0 ms-2 pb-1' disabled style={{backgroundColor: "#1F1F1F", color: "#737373"}}>
-                  Query 10 Results
+                  {queryNumber}
                 </MDBBtn>
-                <MDBDropdown group className='shadow-0 color-primary' style={{backgroundColor: "#303030"}}>
+                <MDBDropdown group dropup className='shadow-0 color-primary' style={{backgroundColor: "#303030"}}>
                   <MDBDropdownToggle className="ps-2 pe-2 pt-1 pb-1" color='color-secondary' />
                   <MDBDropdownMenu dark color='color-primary'>
                     <MDBDropdownItem>
-                      <MDBDropdownLink href="#">Action</MDBDropdownLink>
+                      <MDBDropdownLink onClick={() => {setQueryNumber("Get Top 5 Results")}}>Get Top 5 Results</MDBDropdownLink>
                     </MDBDropdownItem>
                     <MDBDropdownItem>
-                      <MDBDropdownLink href="#">Another action</MDBDropdownLink>
+                      <MDBDropdownLink onClick={() => {setQueryNumber("Get Top 10 Results")}}>Get Top 10 Results</MDBDropdownLink>
+                    </MDBDropdownItem>
+                  </MDBDropdownMenu>
+                </MDBDropdown>
+              </div>
+            </MDBCol>
+            <MDBCol>
+              <div className="color-background">
+                <MDBBtn className='pt-1 mb-0 ms-2 pb-1' disabled style={{backgroundColor: "#1F1F1F", color: "#737373"}}>
+                  {proteinFrame}
+                </MDBBtn>
+                <MDBDropdown group dropup className='shadow-0 color-primary' style={{backgroundColor: "#303030"}}>
+                  <MDBDropdownToggle className="ps-2 pe-2 pt-1 pb-1" color='color-secondary' />
+                  <MDBDropdownMenu dark color='color-primary'>
+                    <MDBDropdownItem>
+                      <MDBDropdownLink onClick={() => {setProteinFrame("Frame 1")}}>Frame 1</MDBDropdownLink>
                     </MDBDropdownItem>
                     <MDBDropdownItem>
-                      <MDBDropdownLink href="#">Something else here</MDBDropdownLink>
+                      <MDBDropdownLink onClick={() => {setProteinFrame("Frame 2")}}>Frame 2</MDBDropdownLink>
+                    </MDBDropdownItem>
+                    <MDBDropdownItem>
+                      <MDBDropdownLink onClick={() => {setProteinFrame("Frame 3")}}>Frame 3</MDBDropdownLink>
                     </MDBDropdownItem>
                   </MDBDropdownMenu>
                 </MDBDropdown>
@@ -73,7 +122,7 @@ function App() {
             </MDBCol>
           </MDBRow>
           <MDBRow className="pt-2">
-            <MDBBtn onClick={() => setBlasting(true)} disabled={blasting} className="pt-2 mb-0 ms-2 pb-1 shadow-0" color="color-primary" style={{backgroundColor: "#1f1f1f"}}>
+            <MDBBtn onClick={() => BLAST()} disabled={blasting} className="pt-2 mb-0 ms-2 pb-1 shadow-0" color="color-primary" style={{backgroundColor: "#1f1f1f"}}>
               {!blasting? 
                 <MDBIcon icon="rocket" className="me-2"/>:
                 <MDBSpinner size="sm" className="me-2"/>
