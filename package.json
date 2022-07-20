@@ -1,7 +1,7 @@
 {
-  "name": "mdb-react-template",
+  "name": "dsapr",
   "version": "4.0.0",
-  "homepage": "https://mootbing.github.io",
+  "homepage": "https://mootbing.github.io/DSAPR/",
   "description": "template for mdb-react-ui-kit",
   "private": true,
   "dependencies": {
@@ -9,6 +9,7 @@
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-scripts": "5.0.1",
+    "use-elapsed-time": "^3.0.4",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
