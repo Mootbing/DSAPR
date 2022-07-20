@@ -1,8 +1,13 @@
 import React from 'react';
 import { useState } from 'react';
-import { MDBBtn, MDBAlert, MDBCol, MDBContainer, MDBCollapse, MDBIcon, MDBDropdown, MDBDropdownToggle, MDBDropdownMenu, MDBDropdownItem, MDBDropdownLink, MDBRadio, MDBRow, MDBTextArea, MDBSwitch, MDBNavbar, MDBNavbarNav, MDBNavbarItem, MDBNavbarLink, MDBNavbarBrand, MDBSpinner } from 'mdb-react-ui-kit';
+import { MDBBtn, MDBAlert, MDBCol, MDBContainer, MDBCollapse, MDBIcon, MDBDropdown, MDBDropdownToggle, MDBDropdownMenu, MDBDropdownItem, MDBDropdownLink, MDBRadio, MDBRow, MDBTextArea, MDBSwitch, MDBNavbar, MDBNavbarNav, MDBNavbarItem, MDBNavbarLink, MDBNavbarBrand, MDBSpinner, MDBFooter } from 'mdb-react-ui-kit';
+import Results from './Results';
 
-export default function Home({blasting, setBlasting}) {
+export default function Home({}) {
+
+  //blast
+  const [blasting, setBlasting] = useState(false);
+
 
   const [removeUnnamed, setRemoveUnnamed] = useState(true);
 
@@ -41,6 +46,7 @@ export default function Home({blasting, setBlasting}) {
 
   return (
     <div style={{backgroundColor: "#181818", width: "100%", height: "100%"}}>
+      {blasting && <Results closeBtn={() => setBlasting(false)}/>}
       <MDBNavbar expand="md">
         <MDBNavbarBrand href="" className="ms-3" style={{color: "#737373"}}>
           DNA
@@ -73,7 +79,7 @@ export default function Home({blasting, setBlasting}) {
           </center>
         </MDBAlert>
         <center>
-          <img src="./images/home/DSAPR.png" className="DSAP-Image" />
+          <img src="./DSAPR/images/home/DSAPR.png" alt="Gel image" className="DSAP-Image" />
         </center>
         <MDBContainer className="query margin-left-right">
           <MDBRow>
@@ -144,11 +150,22 @@ export default function Home({blasting, setBlasting}) {
               BLAST-OFF
             </MDBBtn>
           </MDBRow>
-          <p style={{fontSize: "11px"}} className="pb-0 mb-0">BLASToff is not an official blast, nor should you use it in place of your research. It is meant as a tool for checking TheSAP.</p>
-          <i style={{fontSize: "11px"}} className="mb-5 pt-0 mt-0">"If we have the tech to make big metal tube go space we can simplify TheSAP"---Together, we BLASToff into the future.</i>
+          <p className="pb-0 mb-0 sub-p">BLASToff is not an official blast, nor should you use it in place of your research. It is meant as a tool for checking TheSAP.</p>
+          <i className="mb-5 pt-0 mt-0 sub-p">"If we have the tech to make big metal tube go space we can simplify TheSAP"---Together, we BLASToff into the future.</i>
           </center>
         </MDBContainer>
       </MDBContainer>
+
+      <MDBFooter>
+        <MDBRow>
+          <MDBCol>
+            <MDBNavbarLink href="https://github.com/Mootbing/DSAPR" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>To GitHub</u></MDBNavbarLink>
+          </MDBCol>
+          {/* <MDBCol>
+            <MDBNavbarLink href="https://github.com/Mootbing/DSAPR" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>To GitHub</u></MDBNavbarLink>
+          </MDBCol> */}
+        </MDBRow>
+      </MDBFooter>
     </div>
   );
 }
