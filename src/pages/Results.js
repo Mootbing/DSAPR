@@ -34,8 +34,11 @@ function checkBlast({ id, setResult, aftermath }) {
         });
 }
 
-function runBLAST({ db = "nt", program = "blastn", qDNA, setResult, aftermath }) {
-    fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put")
+function runBLAST({ db = "nt", program = "blastn", qDNA, setResult, aftermath, additionalParams="" }) {
+
+    console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
+    return;
+    fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
         .then(data => data.text())
         .then(data => {
             const [id, seconds] = data.match("QBlastInfoBegin(.|\n)*?(QBlastInfoEnd)")[0].split("\n").slice(1, -1).map(value => value.replace("RID = ", "").replace("RTOE = ", "").replace("\s/g", ""));
@@ -89,15 +92,17 @@ function BLASTTables({rows, blastSrc, cols = [
 
 export default function Results({ closeBtn }) {
 
-    const DNASequence = document.getElementById("query-textarea").value
+    const DNASequence = document.getElementById("query-textarea-dna").value;
+    const ProteinSequence = document.getElementById("query-textarea-protein").value;
 
     const { elapsedTime } = useElapsedTime({ isPlaying: true });
 
     const [blastn_nrnt, setBlastn_nrnt] = useState(null);
     const [blastn_est, setBlastn_est] = useState(null);
     const [blastx_nrnt, setBlastx_nrnt] = useState(null);
+    const [blastp_nrnt, setBlastp_nrnt] = useState(null);
 
-    const loading = blastn_nrnt == null;
+    const loading = blastn_nrnt == null;// || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null;
 
     useEffect(() => {
 
@@ -110,8 +115,12 @@ export default function Results({ closeBtn }) {
         }
 
         console.log(DNASequence + " from results");
-        runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_2});
+        runBLAST({db: "nt", program: "blastx", qDNA: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=F"});
+        // runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_2});
         // checkBlast({id: "DHK9U13K01R", setResult: setBlastn_nrnt});
+        // checkBlast({id: "DHK9U13K01R", setResult: setBlastn_est});
+        // checkBlast({id: "DHK9U13K01R", setResult: setBlastp_nrnt});
+        // checkBlast({id: "DHK9U13K01R", setResult: setBlastx_nrnt});
     }, [])
 
     const games = ["http://slither.io/", "https://moomoo.io", "https://youtube.com"];
@@ -139,7 +148,6 @@ export default function Results({ closeBtn }) {
                             <img src="./DSAPR/images/results/rocketPrimase.png" alt="rocket primase" width="100%" />
                             <h5>Your DNA Sequence</h5>
                             <textarea
-                                id="query-textarea"
                                 readOnly
                                 value={DNASequence}
                                 style={{ border: "0px solid black", backgroundColor: "rgba(50, 50, 50, 50)", color: "#fff", borderRadius: "3px", minWidth: "100%", paddingLeft: "10px", minHeight: "100px" }}
@@ -150,35 +158,18 @@ export default function Results({ closeBtn }) {
                             <BLASTTables blastSrc={blastn_est}/>
                             <MDBRow>
                                 <MDBCol>
-                                    <h5>Protein Sequence</h5>
-                                </MDBCol>
-                                <MDBCol>
-                                    <MDBBtnGroup>
-                                        <MDBBtn className="pt-1 pb-1" style={{ backgroundColor: "#505050" }}>
-                                            Frame 1
-                                        </MDBBtn>
-                                        <MDBBtn className="pt-1 pb-1" style={{ backgroundColor: "#505050" }}>
-                                            Frame 2
-                                        </MDBBtn>
-                                        <MDBBtn className="pt-1 pb-1" style={{ backgroundColor: "#505050" }}>
-                                            Frame 3
-                                        </MDBBtn>
-                                    </MDBBtnGroup>
-                                    <MDBBtn className="ms-5 pt-1 pb-1" style={{ backgroundColor: "#505050" }}>
-                                        Rerun Blast p
-                                    </MDBBtn>
+                                    <h5>Your Protein Sequence</h5>
                                 </MDBCol>
                             </MDBRow>
                             <textarea
-                                id="query-textarea"
                                 readOnly
-                                value="replace with protein seq"
+                                value={ProteinSequence}
                                 style={{ border: "0px solid black", backgroundColor: "rgba(50, 50, 50, 50)", color: "#fff", borderRadius: "3px", minWidth: "100%", paddingLeft: "10px", minHeight: "100px" }}
                             />
-                            {/* <h5>BLASTx</h5>
+                            <h5>BLASTx NRNT Non-Low Complexity</h5>
                             <BLASTTables blastSrc={blastx_nrnt} />
-                            <h5>BLASTp</h5>
-                            <BLASTTables blastSrc={blastx_nrnt} /> */}
+                            <h5>BLASTp NRNT Non-Low Complexity</h5>
+                            <BLASTTables blastSrc={blastp_nrnt} />
                         </MDBModalBody>}
                 </MDBModalContent>
             </MDBModalDialog>
