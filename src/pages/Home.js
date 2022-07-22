@@ -8,28 +8,33 @@ export default function Home({}) {
   //blast
   const [blasting, setBlasting] = useState(false);
 
-
-  const [removeUnnamed, setRemoveUnnamed] = useState(true);
+  // const [removeUnnamed, setRemoveUnnamed] = useState(true);
 
   const [dnaBad, setDnaBad] = useState(false);
+  const [proteinBad, setProteinBad] = useState(false);
 
-  const [proteinFrame, setProteinFrame] = useState("Frame 1");
-  const [queryNumber, setQueryNumber] = useState("Get Top 5 Results");
+  // const [proteinFrame, setProteinFrame] = useState("Frame 1");
+  // const [queryNumber, setQueryNumber] = useState("Get Top 5 Results");
 
   const [message, setMessage] = useState("");
 
   const BLAST = () => {
-    const text = document.getElementById("query-textarea").value;
+    const dnaText = document.getElementById("query-textarea-dna").value;
+    const proteinText = document.getElementById("query-textarea-protein").value;
 
-    console.log(text)
-
-    if (text == null || text.replace(" ", "") == ""){
+    if (dnaText == null || dnaText.replace(" ", "") == ""){
       setMessage("Please Input DNA");
       setDnaBad(true);
       return;
     }
 
-    for (var char of text)
+    if (proteinText == null || proteinText.replace(" ", "") == ""){
+      setMessage("Please Input Protein");
+      setProteinBad(true);
+      return;
+    }
+
+    for (var char of dnaText)
     {
       if (!["a", "t", "g", "c"].includes(char.toLowerCase()))
       {
@@ -39,8 +44,20 @@ export default function Home({}) {
       }
     }
 
+    for (var char of proteinText)
+    {
+      if (!["a", "r", "n", "d", "b", "c", "e", "q", "z", "g", "h", "i", 'l', "k", "m", "f", "p", "s", "t", "w", "y", "v"].includes(char.toLowerCase()))
+      {
+        setMessage("Protein is not valid.");
+        setProteinBad(true);
+        return;
+      }
+    }
+
     setMessage("");
     setDnaBad(false);
+    setProteinBad(false);
+
     setBlasting(true);
   }
 
@@ -69,7 +86,7 @@ export default function Home({}) {
       </MDBNavbar>
       <MDBContainer>
         <MDBAlert
-          show={dnaBad}
+          show={dnaBad || proteinBad}
           position="top-right"
           color='danger'
           width={200}
@@ -82,15 +99,25 @@ export default function Home({}) {
           <img src="./DSAPR/images/home/DSAPR.png" alt="Gel image" className="DSAP-Image" />
         </center>
         <MDBContainer className="query margin-left-right">
+         <center>
           <MDBRow>
-            <textarea
-              id="query-textarea"
-              placeholder="Cropped sequences (eg: AGGAACGCTTAGGACCACC)" 
-              style={{border: !dnaBad ? "0px solid black": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", minHeight: "100px"}}
-            />
+            <MDBCol size="8" className="ps-0 pe-1">
+              <textarea
+                id="query-textarea-dna"
+                placeholder="Cropped DNA Sequence (eg: AGGAACGCTTAGGACCACC)" 
+                style={{border: !dnaBad ? "0px solid black": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", minHeight: "100px", width: "100%"}}
+              />
+            </MDBCol>
+            <MDBCol size="4" className="ps-1 pe-0">
+              <textarea
+                id="query-textarea-protein"
+                placeholder="Cropped Protein Sequence (eg: KPFGCNLLYHDRLK)" 
+                style={{border: !proteinBad ? "0px solid black": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", minHeight: "100px", width: "100%"}}
+              />
+            </MDBCol>
           </MDBRow>
-          <center>
-          <MDBRow className="pt-2">
+          
+          {/* <MDBRow className="pt-2">
             <MDBCol>
               <MDBBtn onClick={() => setRemoveUnnamed(!removeUnnamed)} color="color-secondary shadow-0 pb-1 pt-1 mt-1 mb-0 ps-2 pe-5" style={{backgroundColor: removeUnnamed ? "#737373" : "#1F1F1F"}}>
                 {
@@ -140,9 +167,9 @@ export default function Home({}) {
                 </MDBDropdown>
               </div>
             </MDBCol>
-          </MDBRow>
+          </MDBRow> */}
           <MDBRow className="pt-2">
-            <MDBBtn onClick={() => BLAST()} disabled={blasting} className="pt-2 mb-0 ms-2 pb-1 shadow-0" color="color-primary" style={{backgroundColor: "#1f1f1f"}}>
+            <MDBBtn onClick={() => BLAST()} disabled={blasting} className="pt-2 mb-0 pb-1 shadow-0" color="color-primary" style={{backgroundColor: "#1f1f1f"}}>
               {!blasting? 
                 <MDBIcon icon="rocket" className="me-2"/>:
                 <MDBSpinner size="sm" className="me-2"/>
@@ -150,8 +177,8 @@ export default function Home({}) {
               BLAST-OFF
             </MDBBtn>
           </MDBRow>
-          <p className="pb-0 mb-0 sub-p">BLASToff is not an official blast, nor should you use it in place of your research. It is meant as a tool for checking TheSAP.</p>
-          <i className="mb-5 pt-0 mt-0 sub-p">"If we have the tech to make big metal tube go space we can simplify TheSAP"---Together, we BLASToff into the future.</i>
+          <p className="pb-0 mb-0 sub-p">BLASToff is not an official blast, nor should you use it in place of your research. It is meant as a tool for checking DSAP.</p>
+          <i className="mb-5 pt-0 mt-0 sub-p">If you aren't a teacher/TA, do your work &#128544;.</i>
           </center>
         </MDBContainer>
       </MDBContainer>
@@ -161,9 +188,6 @@ export default function Home({}) {
           <MDBCol>
             <MDBNavbarLink href="https://github.com/Mootbing/DSAPR" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>To GitHub</u></MDBNavbarLink>
           </MDBCol>
-          {/* <MDBCol>
-            <MDBNavbarLink href="https://github.com/Mootbing/DSAPR" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>To GitHub</u></MDBNavbarLink>
-          </MDBCol> */}
         </MDBRow>
       </MDBFooter>
     </div>
