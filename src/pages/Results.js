@@ -111,16 +111,13 @@ export default function Results({ closeBtn }) {
         }
 
         const blastX = () => {
+            runBLAST({db: "nr", program: "blastx", qDNA: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F"});
             console.log("All done!")
         }
 
         console.log(DNASequence + " from results");
-        runBLAST({db: "nt", program: "blastx", qDNA: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=F"});
         // runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_2});
         // checkBlast({id: "DHK9U13K01R", setResult: setBlastn_nrnt});
-        // checkBlast({id: "DHK9U13K01R", setResult: setBlastn_est});
-        // checkBlast({id: "DHK9U13K01R", setResult: setBlastp_nrnt});
-        // checkBlast({id: "DHK9U13K01R", setResult: setBlastx_nrnt});
     }, [])
 
     const games = ["http://slither.io/", "https://moomoo.io", "https://youtube.com"];
