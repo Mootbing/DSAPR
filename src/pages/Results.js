@@ -37,7 +37,7 @@ function checkBlast({ id, setResult, aftermath }) {
 function runBLAST({ db = "nt", program = "blastn", qDNA, setResult, aftermath, additionalParams="" }) {
 
     console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
-    return;
+
     fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
         .then(data => data.text())
         .then(data => {
@@ -86,6 +86,7 @@ function BLASTTables({rows, blastSrc, cols = [
             }}
             style={{ backgroundColor: "#202020", color: "#fff" }}
             dark
+            searchInputProps={{contrast: true}}
         />
     );
 }
@@ -102,7 +103,7 @@ export default function Results({ closeBtn }) {
     const [blastx_nrnt, setBlastx_nrnt] = useState(null);
     const [blastp_nrnt, setBlastp_nrnt] = useState(null);
 
-    const loading = blastn_nrnt == null;// || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null;
+    const loading = blastn_nrnt == null || blastn_est == null || blastx_nrnt == null //|| blastp_nrnt == null;
 
     useEffect(() => {
 
@@ -117,7 +118,9 @@ export default function Results({ closeBtn }) {
 
         console.log(DNASequence + " from results");
         // runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_2});
-        // checkBlast({id: "DHK9U13K01R", setResult: setBlastn_nrnt});
+        checkBlast({id: "DPU6G5NW013", setResult: setBlastn_nrnt});
+        checkBlast({id: "DPU6G5NW013", setResult: setBlastn_est});
+        checkBlast({id: "DPU6G5NW013", setResult: setBlastx_nrnt});
     }, [])
 
     const games = ["http://slither.io/", "https://moomoo.io", "https://youtube.com"];
@@ -130,7 +133,7 @@ export default function Results({ closeBtn }) {
                         <MDBModalTitle>
                             {loading ? "BLASTing..." : "BLAST Results"}
                         </MDBModalTitle>
-                        {!loading && <MDBBtn onClick={closeBtn} className="btn-close" color="white" />}
+                        {!loading && <MDBBtn onClick={closeBtn} className="btn-close" color="white"/>}
                     </MDBModalHeader>
                     {loading ? <MDBModalBody>
                         <center>
