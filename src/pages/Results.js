@@ -7,8 +7,6 @@ function checkBlast({ id, setResult, aftermath }) {
         return;
     }
 
-    console.log("fetch stuff")
-
     fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&RID=" + id)
         .then(data => data.text())
         .then(data => {
@@ -37,8 +35,8 @@ function checkBlast({ id, setResult, aftermath }) {
 
 function runBLAST({ db = "nt", program = "blastn", qDNA, setResult, aftermath, additionalParams="" }) {
 
-    console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
-    return;
+    // console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
+    // return;
 
     fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
         .then(data => data.text())
@@ -64,7 +62,7 @@ function BLASTTables({rows, blastSrc, cols = [
             return [
                 hit.childNodes[7].textContent,
                 hit.childNodes[5].textContent, 
-                HSP.childNodes[7].textContent.includes("e") ? (hit.childNodes[11].childNodes[1].childNodes[7].textContent.split(".")[0] + "e-" + hit.childNodes[11].childNodes[1].childNodes[7].textContent.split("-")[1]) : hit.childNodes[11].childNodes[1].childNodes[7].textContent, 
+                HSP.childNodes[7].textContent.includes("e") ? (hit.childNodes[11].childNodes[1].childNodes[7].textContent.split(".")[0] + "." + hit.childNodes[11].childNodes[1].childNodes[7].textContent.split(".")[1][0] + "e-" + hit.childNodes[11].childNodes[1].childNodes[7].textContent.split("-")[1]) : hit.childNodes[11].childNodes[1].childNodes[7].textContent, 
                 HSP.childNodes[9].textContent,
                 HSP.childNodes[11].textContent,
                 HSP.childNodes[17].textContent,
@@ -100,41 +98,66 @@ export default function Results({ closeBtn }) {
 
     const { elapsedTime } = useElapsedTime({ isPlaying: true });
 
+    const getTimeFormatted = () => {
+        return (new Date(Number(String(elapsedTime).split(".")[0]) * 1000)).toISOString().slice(14, 19);
+    }
+
+    const [openLoadLog, setOpenLoadLog] = useState(false);
+    const [loadLog, setLoadLog] = useState([new Date(Date.now()) + " - Initiated Search"]);
+
     const [openDNA, setOpenDNA] = useState(true);
     const [openProtein, setOpenProtein] = useState(true);
     const [openedN_nrnt, setOpenedN_nrnt] = useState(true);
     const [openedN_est, setOpenedN_est] = useState(true);
     const [openedX_nrnt, setOpenedX_nrnt] = useState(true);
     const [openedP_nrnt, setOpenedP_nrnt] = useState(true);
+    const [openedP_homoSapiens, setOpenedP_homoSapiens] = useState(true);
 
     const [blastn_nrnt, setBlastn_nrnt] = useState(null);
     const [blastn_est, setBlastn_est] = useState(null);
     const [blastx_nrnt, setBlastx_nrnt] = useState(null);
     const [blastp_nrnt, setBlastp_nrnt] = useState(null);
+    const [blastp_homoSapiens, setBlastp_homoSapiens] = useState(null);
 
     const [loading, setLoading] = useState(true); //blastn_nrnt == null || blastn_est == null || blastx_nrnt == null //|| blastp_nrnt == null;
 
     useEffect(() => {
 
-        const blastN_2 = () => {
+        const blastN_NRNT = () => {
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-NRNT"]);
+            runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_EST});
+        }
+
+        const blastN_EST = () => {
+            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-EST"]);
             runBLAST({db: "est", program: "blastn", qDNA: DNASequence, setResult: setBlastn_est, aftermath: blastX});
         }
 
         const blastX = () => {
-            runBLAST({db: "nr", program: "blastx", qDNA: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F"});
-            console.log("All done!")
+            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlaXtP"]);
+            runBLAST({db: "nr", program: "blastx", qDNA: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F", aftermath: blastP});
+        }
+
+        const blastP = () => {
+            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastP"]);
+            runBLAST({db: "nr", program: "blastp", qDNA: ProteinSequence, setResult: setBlastp_nrnt, additionalParams: "&FILTER=F", aftermath: done});
         }
 
         const done = () => {
+            console.log("done")
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - All Done!"]);
             setLoading(false);
         }
 
-        console.log(DNASequence + " from results");
-        // runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_2});
-        checkBlast({id: "DPU6G5NW013", setResult: setBlastn_nrnt});
-        checkBlast({id: "DPU6G5NW013", setResult: setBlastn_est});
-        checkBlast({id: "DPU6G5NW013", setResult: setBlastx_nrnt});
-        setTimeout(done, 3000);
+        blastN_NRNT();
+
+        // checkBlast({id: "DVCED8ZS013", setResult: setBlastn_nrnt, aftermath: done});
+        // setTimeout(done, 2000)
+        // checkBlast({id: "DPU6G5NW013", setResult: setBlastn_est});
+        // checkBlast({id: "DPU6G5NW013", setResult: setBlastx_nrnt});
     }, [])
 
     return (
@@ -149,16 +172,17 @@ export default function Results({ closeBtn }) {
                             {!loading && <MDBBtn onClick={closeBtn} className="ms-auto ps-2 pt-1 pe-2 pb-1" color="white" style={{backgroundColor: "#6a65fc", width: "25px", height: "25px"}}><MDBIcon icon="times" className="ms-0 me-0 ps-0 pe-0"/></MDBBtn>}
                         </MDBContainer>
                     </MDBModalBody>
-                    {loading ? <MDBModalBody>
+                    <MDBModalBody>
+                    {loading ? <>
                         <center>
                             <MDBSpinner color="white" className="mb-4 mt-4" />
-                            <p className="mb-0">{(new Date(Number(String(elapsedTime).split(".")[0]) * 1000)).toISOString().slice(14, 19)} - It may take a while to run all the BLAST searches required.</p>
+                            <p className="mb-0">{getTimeFormatted()} - It may take a while to run all the BLAST searches required.</p>
                             <p className="sub-p">Please leave this page open - it will automatically refresh when done</p>
                             <iframe className="pt-4" src={"https://slither.io"} width="90%" height="450px" />
                             <p className="sub-p">The game will disconnect when done.</p>
                         </center>
-                    </MDBModalBody> :
-                        <MDBModalBody>
+                    </> :
+                        <>
                             <img src="./DSAPR/images/results/rocketPrimase.png" alt="rocket primase" width="100%" />
                             <MDBBtn onClick={() => setOpenDNA(!openDNA)}
                                 color="link"
@@ -230,7 +254,37 @@ export default function Results({ closeBtn }) {
                                 <h4 style={{color: "#6a65fc"}}>BLASTp NR</h4>
                                 <BLASTTables blastSrc={blastp_nrnt} />
                             </MDBCollapse>
-                        </MDBModalBody>}
+
+                            {/* <MDBBtn onClick={() => setOpenedP_homoSapiens(!openedP_homoSapiens)}
+                                color="link"
+                                className="mt-1 mb-1"
+                                style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
+                            >BLASTp Homo Sapiens</MDBBtn>
+                            <MDBCollapse show={openedP_homoSapiens}>
+                                <h4 style={{color: "#6a65fc"}}>BLASTp Homo Sapiens</h4>
+                                <BLASTTables blastSrc={blastp_homoSapiens} />
+                                <MDBBtn 
+                                    color="link"
+                                    className="mt-1 mb-1"
+                                    style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
+                                >Open BlastX Page</MDBBtn>
+                            </MDBCollapse> */}
+                        </>}
+                        <center>
+                            <MDBBtn onClick={() => setOpenLoadLog(!openLoadLog)}
+                                color="link"
+                                className="mt-1 mb-1"
+                                style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
+                            >Log</MDBBtn>
+                            <MDBCollapse show={openLoadLog}>
+                            <textarea
+                                readOnly
+                                value={loadLog.map(v => v + "\n").join("")}
+                                style={{ border: "0px solid black", backgroundColor: "#242424", color: "#6a65fc", borderRadius: "3px", minWidth: "100%", paddingLeft: "10px", minHeight: "300px" }}
+                            />
+                            </MDBCollapse>
+                        </center>
+                    </MDBModalBody>
                 </MDBModalContent>
             </MDBModalDialog>
         </MDBModal>
