@@ -1,9 +1,9 @@
 import React from 'react';
 import { useState } from 'react';
-import { MDBBtn, MDBAlert, MDBCol, MDBContainer, MDBCollapse, MDBIcon, MDBDropdown, MDBDropdownToggle, MDBDropdownMenu, MDBDropdownItem, MDBDropdownLink, MDBRadio, MDBRow, MDBTextArea, MDBSwitch, MDBNavbar, MDBNavbarNav, MDBNavbarItem, MDBNavbarLink, MDBNavbarBrand, MDBSpinner, MDBFooter } from 'mdb-react-ui-kit';
+import { MDBBtn, MDBAlert, MDBCol, MDBContainer, MDBCollapse, MDBIcon, MDBDropdown, MDBDropdownToggle, MDBDropdownMenu, MDBDropdownItem, MDBDropdownLink, MDBRadio, MDBRow, MDBTextArea, MDBSwitch, MDBNavbar, MDBNavbarNav, MDBNavbarItem, MDBNavbarLink, MDBNavbarBrand, MDBSpinner, MDBFooter, MDBToast } from 'mdb-react-ui-kit';
 import Results from './Results';
 
-export default function Home({}) {
+export default function Home() {
 
   //blast
   const [blasting, setBlasting] = useState(false);
@@ -19,6 +19,11 @@ export default function Home({}) {
   const [message, setMessage] = useState("");
 
   const BLAST = () => {
+
+    if (blasting) {
+      return;
+    }
+
     const dnaText = document.getElementById("query-textarea-dna").value;
     const proteinText = document.getElementById("query-textarea-protein").value;
 
@@ -85,16 +90,30 @@ export default function Home({}) {
         </MDBCollapse>
       </MDBNavbar>
       <MDBContainer>
-        <MDBAlert
+        {/* <MDBAlert
           show={dnaBad || proteinBad}
-          position="top-right"
+          
           color='danger'
           width={200}
         >
           <center>
             {message}
           </center>
-        </MDBAlert>
+        </MDBAlert> */}
+        <MDBToast 
+          position="top-right"
+          className="mx-auto"
+          color="danger"
+          show={dnaBad || proteinBad}
+          isOpen={dnaBad || proteinBad}
+          headerContent={
+            <>
+              <MDBIcon icon="exclamation-triangle" className="me-2" />
+              <strong className='me-auto'>Bad Input!</strong>
+            </>
+          }
+          bodyContent={message}
+        />
         <center>
           <img src="./DSAPR/images/home/DSAPR.png" alt="Gel image" className="DSAP-Image" />
         </center>
