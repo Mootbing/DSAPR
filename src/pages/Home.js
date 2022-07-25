@@ -124,14 +124,14 @@ export default function Home() {
               <textarea
                 id="query-textarea-dna"
                 placeholder="Cropped DNA Sequence (eg: AGGAACGCTTAGGACCACC)" 
-                style={{border: !dnaBad ? "0px solid black": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", paddingLeft: "5px", minHeight: "100px", width: "100%"}}
+                style={{border: !dnaBad ? "none": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", paddingLeft: "5px", minHeight: "100px", width: "100%"}}
               />
             </MDBCol>
             <MDBCol size="4" className="ps-1 pe-0">
               <textarea
                 id="query-textarea-protein"
                 placeholder="Cropped Protein Sequence (eg: KPFGCNLLYHDRLK)" 
-                style={{border: !proteinBad ? "0px solid black": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", paddingLeft: "5px", minHeight: "100px", width: "100%"}}
+                style={{border: !proteinBad ? "none": "2px solid #FF8A8A", backgroundColor: "#1F1F1F", color: "#fff", borderRadius: "3px", paddingLeft: "5px", minHeight: "100px", width: "100%"}}
               />
             </MDBCol>
           </MDBRow>
