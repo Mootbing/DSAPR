@@ -28,17 +28,22 @@ function checkBlast({ id, setResult, aftermath }) {
                     );
             }
             else {
+                if (stats.includes("Status=FAILED")){
+                    setResult([]);
+                    aftermath();
+                    return;
+                }
                 setTimeout(() => checkBlast({ id, setResult, aftermath }), 30000);
             }
         });
 }
 
-function runBLAST({ db = "nt", program = "blastn", qDNA, setResult, aftermath, additionalParams="" }) {
+function runBLAST({ db = "nt", program = "blastn", qSeqeuence, setResult, aftermath, additionalParams="" }) {
 
-    // console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
+    // console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qSeqeuence + "&CMD=Put" + additionalParams)
     // return;
 
-    fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qDNA + "&CMD=Put" + additionalParams)
+    fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qSeqeuence + "&CMD=Put" + additionalParams)
         .then(data => data.text())
         .then(data => {
             const [id, seconds] = data.match("QBlastInfoBegin(.|\n)*?(QBlastInfoEnd)")[0].split("\n").slice(1, -1).map(value => value.replace("RID = ", "").replace("RTOE = ", "").replace("\s/g", ""));
@@ -95,8 +100,10 @@ export default function Results({ closeBtn }) {
 
     const DNASequence = document.getElementById("query-textarea-dna").value;
     const ProteinSequence = document.getElementById("query-textarea-protein").value;
+    
+    const [loading, setLoading] = useState(true); //blastn_nrnt == null || blastn_est == null || blastx_nrnt == null //|| blastp_nrnt == null;
 
-    const { elapsedTime } = useElapsedTime({ isPlaying: true });
+    const { elapsedTime } = useElapsedTime({ isPlaying: loading, updateInterval: 1});
 
     const getTimeFormatted = () => {
         return (new Date(Number(String(elapsedTime).split(".")[0]) * 1000)).toISOString().slice(14, 19);
@@ -119,31 +126,35 @@ export default function Results({ closeBtn }) {
     const [blastp_nrnt, setBlastp_nrnt] = useState(null);
     const [blastp_homoSapiens, setBlastp_homoSapiens] = useState(null);
 
-    const [loading, setLoading] = useState(true); //blastn_nrnt == null || blastn_est == null || blastx_nrnt == null //|| blastp_nrnt == null;
-
     useEffect(() => {
 
         const blastN_NRNT = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-NRNT"]);
-            runBLAST({db: "nt", program: "blastn", qDNA: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_EST});
+            runBLAST({db: "nt", program: "blastn", qSeqeuence: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_EST});
         }
 
         const blastN_EST = () => {
             setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-EST"]);
-            runBLAST({db: "est", program: "blastn", qDNA: DNASequence, setResult: setBlastn_est, aftermath: blastX});
+            runBLAST({db: "est", program: "blastn", qSeqeuence: DNASequence, setResult: setBlastn_est, aftermath: blastX});
         }
 
         const blastX = () => {
             setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlaXtP"]);
-            runBLAST({db: "nr", program: "blastx", qDNA: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F", aftermath: blastP});
+            runBLAST({db: "nr", program: "blastx", qSeqeuence: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F", aftermath: blastP});
         }
 
         const blastP = () => {
             setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastP"]);
-            runBLAST({db: "nr", program: "blastp", qDNA: ProteinSequence, setResult: setBlastp_nrnt, additionalParams: "&FILTER=F", aftermath: done});
+            runBLAST({db: "nr", program: "blastp", qSeqeuence: ProteinSequence, setResult: setBlastp_nrnt, additionalParams: "&FILTER=F", aftermath: blastP_homoSapiens});
+        }
+
+        const blastP_homoSapiens = () => {
+            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastP - Homo sapiens"]);
+            runBLAST({db: "nr", program: "blastp", qSeqeuence: ProteinSequence, setResult: setBlastp_homoSapiens, additionalParams: "&FILTER=F&EQ_MENU=Home%20sapiens%20%28taxid%3A9606%29", aftermath: done});
         }
 
         const done = () => {
@@ -152,12 +163,12 @@ export default function Results({ closeBtn }) {
             setLoading(false);
         }
 
+        // blastP_homoSapiens();
+
         blastN_NRNT();
 
         // checkBlast({id: "DVCED8ZS013", setResult: setBlastn_nrnt, aftermath: done});
         // setTimeout(done, 2000)
-        // checkBlast({id: "DPU6G5NW013", setResult: setBlastn_est});
-        // checkBlast({id: "DPU6G5NW013", setResult: setBlastx_nrnt});
     }, [])
 
     return (
@@ -255,7 +266,7 @@ export default function Results({ closeBtn }) {
                                 <BLASTTables blastSrc={blastp_nrnt} />
                             </MDBCollapse>
 
-                            {/* <MDBBtn onClick={() => setOpenedP_homoSapiens(!openedP_homoSapiens)}
+                            <MDBBtn onClick={() => setOpenedP_homoSapiens(!openedP_homoSapiens)}
                                 color="link"
                                 className="mt-1 mb-1"
                                 style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
@@ -268,7 +279,7 @@ export default function Results({ closeBtn }) {
                                     className="mt-1 mb-1"
                                     style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
                                 >Open BlastX Page</MDBBtn>
-                            </MDBCollapse> */}
+                            </MDBCollapse>
                         </>}
                         <center>
                             <MDBBtn onClick={() => setOpenLoadLog(!openLoadLog)}
