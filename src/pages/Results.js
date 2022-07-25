@@ -141,7 +141,7 @@ export default function Results({ closeBtn }) {
 
         const blastX = () => {
             setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
-            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlaXtP"]);
+            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastX"]);
             runBLAST({db: "nr", program: "blastx", qSeqeuence: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F", aftermath: blastP});
         }
 
