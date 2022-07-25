@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/DSAPR/static/css/main.a0d012c8.css",
-    "main.js": "/DSAPR/static/js/main.9cd7a6ee.js",
+    "main.js": "/DSAPR/static/js/main.b4d7cf9e.js",
     "static/js/787.bcb49e9d.chunk.js": "/DSAPR/static/js/787.bcb49e9d.chunk.js",
     "index.html": "/DSAPR/index.html",
     "main.a0d012c8.css.map": "/DSAPR/static/css/main.a0d012c8.css.map",
-    "main.9cd7a6ee.js.map": "/DSAPR/static/js/main.9cd7a6ee.js.map",
+    "main.b4d7cf9e.js.map": "/DSAPR/static/js/main.b4d7cf9e.js.map",
     "787.bcb49e9d.chunk.js.map": "/DSAPR/static/js/787.bcb49e9d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.a0d012c8.css",
-    "static/js/main.9cd7a6ee.js"
+    "static/js/main.b4d7cf9e.js"
   ]
 }
