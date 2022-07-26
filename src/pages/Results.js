@@ -21,7 +21,7 @@ function checkBlast({ id, setResult, aftermath }) {
                         data = data.getElementsByTagName("Hit");
                         setResult(Array.from(data));
                         if (aftermath != null) {
-                            setTimeout(aftermath, 30000);
+                            aftermath();
                         }
                         return;
                     }
@@ -38,7 +38,7 @@ function checkBlast({ id, setResult, aftermath }) {
         });
 }
 
-function runBLAST({ db = "nt", program = "blastn", qSeqeuence, setResult, aftermath, additionalParams="" }) {
+function runBLAST({ db = "nt", program = "blastn", qSeqeuence, setResult, next, aftermath, additionalParams="" }) {
 
     // console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qSeqeuence + "&CMD=Put" + additionalParams)
     // return;
@@ -50,6 +50,10 @@ function runBLAST({ db = "nt", program = "blastn", qSeqeuence, setResult, afterm
             console.log("id: " + id);
             checkBlast({id, setResult, aftermath})
         });
+
+    if (next != null) {
+        setTimeout(next, 30000);
+    }
 }
 
 function BLASTTables({rows, blastSrc, cols = [
@@ -110,7 +114,7 @@ export default function Results({ closeBtn }) {
     }
 
     const [openLoadLog, setOpenLoadLog] = useState(false);
-    const [loadLog, setLoadLog] = useState([new Date(Date.now()) + " - Initiated Search"]);
+    const [loadLog, setLoadLog] = useState(["----------Initiated Search----------"]);
 
     const [openDNA, setOpenDNA] = useState(true);
     const [openProtein, setOpenProtein] = useState(true);
@@ -126,50 +130,56 @@ export default function Results({ closeBtn }) {
     const [blastp_nrnt, setBlastp_nrnt] = useState(null);
     const [blastp_homoSapiens, setBlastp_homoSapiens] = useState(null);
 
+    const setMessageDone = (program) => {
+        setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) + "-" + program + " - Done"]);
+    }
+
+    //initialize the searches
     useEffect(() => {
 
         const blastN_NRNT = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-NRNT"]);
-            runBLAST({db: "nt", program: "blastn", qSeqeuence: DNASequence, setResult: setBlastn_nrnt, aftermath: blastN_EST});
+            runBLAST({db: "nt", program: "blastn", qSeqeuence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
         }
 
         const blastN_EST = () => {
-            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-EST"]);
-            runBLAST({db: "est", program: "blastn", qSeqeuence: DNASequence, setResult: setBlastn_est, aftermath: blastX});
+            runBLAST({db: "est", program: "blastn", qSeqeuence: DNASequence, setResult: setBlastn_est, additionalParams: "&FILTER=T", next: blastX, aftermath: () => setMessageDone("BlastN-EST")});
         }
 
         const blastX = () => {
-            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastX"]);
-            runBLAST({db: "nr", program: "blastx", qSeqeuence: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F", aftermath: blastP});
+            runBLAST({db: "nr", program: "blastx", qSeqeuence: DNASequence, setResult: setBlastx_nrnt, additionalParams: "&FILTER=F", next: blastP, aftermath: () => setMessageDone("BlastX")});
         }
 
         const blastP = () => {
-            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastP"]);
-            runBLAST({db: "nr", program: "blastp", qSeqeuence: ProteinSequence, setResult: setBlastp_nrnt, additionalParams: "&FILTER=F", aftermath: blastP_homoSapiens});
+            runBLAST({db: "nr", program: "blastp", qSeqeuence: ProteinSequence, setResult: setBlastp_nrnt, additionalParams: "&FILTER=F", next: blastP_homoSapiens, aftermath: () => setMessageDone("BlastP")});
         }
 
         const blastP_homoSapiens = () => {
-            setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) +" - Done"]);
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastP - Homo sapiens"]);
-            runBLAST({db: "nr", program: "blastp", qSeqeuence: ProteinSequence, setResult: setBlastp_homoSapiens, additionalParams: "&FILTER=F&EQ_MENU=Home%20sapiens%20%28taxid%3A9606%29", aftermath: done});
+            runBLAST({db: "nr", program: "blastp", qSeqeuence: ProteinSequence, setResult: setBlastp_homoSapiens, additionalParams: "&FILTER=F&EQ_MENU=Home%20sapiens%20%28taxid%3A9606%29"});
         }
-
-        const done = () => {
-            console.log("done")
-            setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - All Done!"]);
-            setLoading(false);
-        }
-
-        // blastP_homoSapiens();
 
         blastN_NRNT();
 
-        // checkBlast({id: "DVCED8ZS013", setResult: setBlastn_nrnt, aftermath: done});
-        // setTimeout(done, 2000)
+        // checkBlast({id: "DYR5UPN6016", setResult: setBlastn_nrnt});
     }, [])
+
+    //check for updates on status
+    useEffect(() => {
+
+        if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null)
+        {
+            return;
+        }
+
+        setMessageDone("BlastP-Homo Sapiens")
+
+        setLoadLog(loadLog => [...loadLog, "----------All Done!----------"]);
+        setLoading(false);
+    }, [blastn_nrnt, blastn_est, blastx_nrnt, blastp_nrnt, blastp_homoSapiens])
 
     return (
         <MDBModal show staticBackdrop>
