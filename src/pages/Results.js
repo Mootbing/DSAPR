@@ -40,9 +40,6 @@ function checkBlast({ id, setResult, aftermath }) {
 
 function runBLAST({ db = "nt", program = "blastn", qSequence, setResult, next, aftermath, additionalParams="" }) {
 
-    // console.log("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qSequence + "&CMD=Put" + additionalParams)
-    // return;
-
     fetch("https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=" + program + "&DATABASE=" + db + "&QUERY=" + qSequence + "&CMD=Put" + additionalParams)
         .then(data => data.text())
         .then(data => {
@@ -119,15 +116,6 @@ function runPDB({qSequence, setResult, next, aftermath}){
     }
 
     return;
-
-    // const request = `https://search.rcsb.org/rcsbsearch/v2/query?json=%7B"query"%3A%7B"type"%3A"group"%2C"logical_operator"%3A"and"%2C"nodes"%3A%5B%7B"type"%3A"terminal"%2C"service"%3A"sequence"%2C"parameters"%3A%7B"evalue_cutoff"%3A0.1%2C"identity_cutoff"%3A0%2C"target"%3A"pdb_protein_sequence"%2C"value"%3A"` + qSequence + `"%7D%7D%5D%7D%2C"return_type"%3A"polymer_entity"%7D`;
-    // console.log(request)
-
-    // fetch(request)
-    //     .then(data => data.text())
-    //     .then(data => {
-    //         console.log(data);
-    //     })
 }
 
 export default function Results({ closeBtn }) {
@@ -154,6 +142,8 @@ export default function Results({ closeBtn }) {
     const [openedP_nrnt, setOpenedP_nrnt] = useState(true);
     const [openedP_homoSapiens, setOpenedP_homoSapiens] = useState(true);
     const [openedPDB, setOpenedPDB] = useState(true);
+    const [openedn_tsa, setOpenedn_tsa] = useState(true);
+    const [openedTAIR, setOpenedTAIR] = useState(true);
     const [openedLocus, setOpenedLocus] = useState(true);
 
     const [blastn_nrnt, setBlastn_nrnt] = useState(null);
@@ -163,6 +153,7 @@ export default function Results({ closeBtn }) {
     const [blastp_homoSapiens, setBlastp_homoSapiens] = useState(null);
     const [PDBLink, setPDBLink] = useState(null);
     const [locus, setLocus] = useState(null);
+    const [bioGRIDID, setBioGRIDID] = useState(null);
 
     const setMessageDone = (program) => {
         setLoadLog(loadLog => [...loadLog, "     " + new Date(Date.now()) + "-" + program + " - Done"]);
@@ -193,19 +184,15 @@ export default function Results({ closeBtn }) {
 
         const blastP_homoSapiens = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastP - Homo sapiens"]);
-            runBLAST({db: "nr", program: "blastp", qSequence: ProteinSequence, setResult: setBlastp_homoSapiens, additionalParams: "&FILTER=F&EQ_MENU=Home%20sapiens%20%28taxid%3A9606%29"});
+            runBLAST({db: "nr", program: "blastp", qSequence: ProteinSequence, setResult: setBlastp_homoSapiens, additionalParams: "&FILTER=F&EQ_MENU=Home%20sapiens%20%28taxid%3A9606%29", next: searchPDB, aftermath: () => setMessageDone("BlastP-Homo Sapiens")});
         }
 
         const searchPDB = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated PDB"]);
-            runPDB({qSequence: ProteinSequence, setResult: setPDBLink, aftermath: () => setMessageDone("PDB")});
+            runPDB({qSequence: ProteinSequence, setResult: setPDBLink, next: blastN_TSA, aftermath: () => setMessageDone("PDB")});
         }
 
-        searchPDB();
-
         // blastN_NRNT();
-
-        // checkBlast({id: "DYR5UPN6016", setResult: setBlastn_nrnt});
     }, [])
 
     //check for updates on status
@@ -215,8 +202,6 @@ export default function Results({ closeBtn }) {
         // {
         //     return;
         // }
-
-        setMessageDone("BlastP-Homo Sapiens")
 
         setLoadLog(loadLog => [...loadLog, "----------All Done!----------"]);
         setLoading(false);
@@ -348,6 +333,39 @@ export default function Results({ closeBtn }) {
                                 ><MDBIcon icon="external-link-alt" className="me-2"/>Open RCSB In New Tab</MDBBtn>
                             </MDBCollapse>
 
+                            <MDBBtn onClick={() => setOpenedn_tsa(!openedn_tsa)}
+                                color="link"
+                                className="mt-1 mb-1"
+                                style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
+                            >Blastn TSA</MDBBtn>
+                            <MDBCollapse show={openedn_tsa}>
+                                <h4 style={{color: "#6a65fc"}}>Blastn TSA</h4>
+                                <p style={{color: "#6a65fc"}}>We decided to not automate blastN TSA because you would still need to pick the contig to run a blastX with later. Click the button below to start a blastnTSA query with your DNA sequence prefilled.</p>
+                                <MDBBtn href={"https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch&PAGE=Nucleotides&PROGRAM=blastn&QUERY="+DNASequence+"&JOB_TITLE=Nucleotide%20Sequence&GAPCOSTS=5%202&MATCH_SCORES=2,-3&DATABASE=tsa_nt&BLAST_PROGRAMS=blastn&MAX_NUM_SEQ=100&EXPECT=10&WORD_SIZE=11&REPEATS=566037&TEMPLATE_TYPE=0&TEMPLATE_LENGTH=0&FILTER=L&EQ_MENU=GAQZ%3A%20TSA%3A%20Landoltia%20punctata%2C%20transcriptome%20shotgun%20assembly&DB_GROUP=WGSProj&PROG_DEFAULTS=on&SHOW_OVERVIEW=false&SHOW_LINKOUT=false&ALIGNMENT_VIEW=Pairwise&MASK_CHAR=2&MASK_COLOR=1&GET_SEQUENCE=false&NEW_VIEW=false&NCBI_GI=false&NUM_OVERVIEW=100&DESCRIPTIONS=100&ALIGNMENTS=50&FORMAT_OBJECT=Alignment&FORMAT_TYPE=HTML&SHOW_CDS_FEATURE=false"}
+                                    target="_blank"
+                                    color="link"
+                                    className="mt-1 mb-1"
+                                    style={{color: "#39C0ED", backgroundColor: "#242424", width: "100%"}}
+                                ><MDBIcon icon="external-link-alt" className="me-2"/>Run BLASTn TSA In New Tab</MDBBtn>
+                            </MDBCollapse>
+
+                            <MDBBtn onClick={() => setOpenedTAIR(!openedTAIR)}
+                                color="link"
+                                className="mt-1 mb-1"
+                                style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
+                            >TAIR Database</MDBBtn>
+                            <MDBCollapse show={openedTAIR}>
+                                <h4 style={{color: "#6a65fc"}}>TAIR Database</h4>
+                                <p style={{color: "#6a65fc"}}>!!!!!!Remember to change from blastN to blastP on blast program!!!!!!</p>
+                                <iframe src="https://www.arabidopsis.org/Blast/index.jsp" width="100%" height="700px" style={{borderRadius: "5px"}} />
+                                <MDBBtn href="https://www.arabidopsis.org/Blast/index.jsp"
+                                    target="_blank"
+                                    color="link"
+                                    className="mt-1 mb-1"
+                                    style={{color: "#39C0ED", backgroundColor: "#242424", width: "100%"}}
+                                ><MDBIcon icon="external-link-alt" className="me-2"/>Open TAIR In New Tab</MDBBtn>
+                            </MDBCollapse>
+
                             <MDBBtn onClick={() => setOpenedLocus(!openedLocus)}
                                 color="link"
                                 className="mt-1 mb-1"
@@ -374,17 +392,30 @@ export default function Results({ closeBtn }) {
                                             }
 
                                             setLocus(loc);
+                                            setBioGRIDID(null);
 
                                             setOpenedLocus(false);
                                             setTimeout(() => {setOpenedLocus(true)}, 500);
 
+                                            fetch("https://webservice.thebiogrid.org/interactions?geneList="+loc+"&accesskey=9df8e32b4195b14e33658dcb6762f60a&format=json")
+                                                .then(res => res.json())
+                                                .then(data => {
+                                                    const m = new Map(Object.entries(data));
+                                                    setBioGRIDID(m.get(m.keys().next().value)["BIOGRID_ID_B"]);
+                                                })
                                         }}
                                             color="link"
                                             style={{color: "#39C0ED", backgroundColor: "#2d2d2d", width: "100%", height: "35px"}}
                                         >Search!</MDBBtn>
                                     </MDBCol>
                                 </MDBRow>
-                            <MDBCollapse show={locus != null}>
+                            <MDBCollapse show={locus != null && bioGRIDID != null}>
+                                <MDBBtn href={"https://thebiogrid.org/"+bioGRIDID+"/summary/arabidopsis-thaliana/pag1.html"}
+                                    target="_blank"
+                                    color="link"
+                                    className="mt-1 mb-1"
+                                    style={{color: "#39C0ED", backgroundColor: "#242424", width: "100%"}}
+                                ><MDBIcon icon="external-link-alt" className="me-2"/>Open BioGRID in new tab</MDBBtn>
                                 {/* <iframe src={"http://bar.utoronto.ca/efp/cgi-bin/efpWeb.cgi?primaryGene="+locus+"&mode=Absolute&dataSource=Developmental_Map"} width="100%" height="700px" style={{borderRadius: "5px"}} /> */}
                                 <MDBBtn href={"http://bar.utoronto.ca/efp/cgi-bin/efpWeb.cgi?primaryGene="+locus+"&mode=Absolute&dataSource=Developmental_Map"}
                                     target="_blank"
