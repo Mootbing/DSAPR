@@ -1,5 +1,5 @@
 # DSAPR
-I put the defeat in DSAP
+I put the Revise/review in DSAP**R**
 Student project for checking DSAP programs next schoolyear.
 
 ## *V1.0 Released*
