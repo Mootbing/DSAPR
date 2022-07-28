@@ -115,7 +115,7 @@ export default function Home() {
           bodyContent={message}
         />
         <center>
-          <img src="./DSAPR/images/home/DSAPR.png" alt="Gel image" className="DSAP-Image" />
+          <img src="./images/home/DSAPR.png" alt="Gel image" className="DSAP-Image" />
         </center>
         <MDBContainer className="query margin-left-right">
          <center>

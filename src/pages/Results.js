@@ -229,7 +229,7 @@ export default function Results({ closeBtn }) {
                         </center>
                     </> :
                         <>
-                            <img src="./DSAPR/images/results/rocketPrimase.png" alt="rocket primase" width="100%" />
+                            <img src="./images/results/rocketPrimase.png" alt="rocket primase" width="100%" />
                             <MDBBtn onClick={() => setOpenDNA(!openDNA)}
                                 color="link"
                                 className="mt-1 mb-1"
