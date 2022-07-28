@@ -93,13 +93,14 @@ function BLASTTables({rows, blastSrc, cols = [
             style={{ backgroundColor: "#202020", color: "#fff" }}
             dark
             searchInputProps={{contrast: true}}
+            noFoundMessage="No Results Found. Try indexing to the first page if you are searching else BLAST may have failed or there are acutally no results."
         />
     );
 }
 
 function runPDB({qSequence, setResult, next, aftermath}){
 
-    console.log(qSequence);
+    console.log("query: " + qSequence);
 
     if (qSequence == null){
         return;
@@ -112,10 +113,8 @@ function runPDB({qSequence, setResult, next, aftermath}){
     }
 
     if (aftermath != null) {
-        aftermath();
+        setTimeout(aftermath, 5000);
     }
-
-    return;
 }
 
 export default function Results({ closeBtn }) {
@@ -189,19 +188,19 @@ export default function Results({ closeBtn }) {
 
         const searchPDB = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated PDB"]);
-            runPDB({qSequence: ProteinSequence, setResult: setPDBLink, next: blastN_TSA, aftermath: () => setMessageDone("PDB")});
+            runPDB({qSequence: ProteinSequence, setResult: setPDBLink, aftermath: () => setMessageDone("PDB")});
         }
 
-        // blastN_NRNT();
+        blastN_NRNT();
     }, [])
 
     //check for updates on status
     useEffect(() => {
 
-        // if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null || PDBLink == null) {
-        // {
-        //     return;
-        // }
+        if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null || PDBLink == null) 
+        {
+            return;
+        }
 
         setLoadLog(loadLog => [...loadLog, "----------All Done!----------"]);
         setLoading(false);
@@ -378,7 +377,7 @@ export default function Results({ closeBtn }) {
                                     <MDBCol size="10">
                                         <textarea
                                             id="query-textarea-locus"
-                                            placeholder="Enter locus AT of homolog"
+                                            placeholder="Enter locus (AT number) of homolog"
                                             style={{ border: "0px solid black", backgroundColor: "#2d2d2d", color: "#fff", borderRadius: "3px", minWidth: "100%", paddingLeft: "10px", height: "35px" }}
                                         />
                                     </MDBCol>
