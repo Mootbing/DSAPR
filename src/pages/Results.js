@@ -19,7 +19,7 @@ function checkBlast({ id, setResult, aftermath }) {
                         const parser = new DOMParser();
                         data = parser.parseFromString(data, "text/xml");
                         data = data.getElementsByTagName("Hit");
-                        setResult(Array.from(data));
+                        setResult([id, Array.from(data)]);
                         if (aftermath != null) {
                             aftermath();
                         }
@@ -29,7 +29,7 @@ function checkBlast({ id, setResult, aftermath }) {
             }
             else {
                 if (stats.includes("Status=FAILED")){
-                    setResult([]);
+                    setResult([id, null]);
                     aftermath();
                     return;
                 }
@@ -63,7 +63,7 @@ function BLASTTables({rows, blastSrc, cols = [
 ]}){
 
     if (blastSrc != null){
-        rows = blastSrc.map(hit => {
+        rows = blastSrc[1].map(hit => {
             const HSP = hit.childNodes[11].childNodes[1];
             return [
                 hit.childNodes[7].textContent,
@@ -82,19 +82,39 @@ function BLASTTables({rows, blastSrc, cols = [
     }
 
     return (
-        <MDBDatatable
-            entries={10}
-            search
-            entriesOptions={[10]}
-            data={{
-                columns: cols,
-                rows: rows
-            }}
-            style={{ backgroundColor: "#202020", color: "#fff" }}
-            dark
-            searchInputProps={{contrast: true}}
-            noFoundMessage="No Results Found. Try indexing to the first page if you are searching else BLAST may have failed or there are acutally no results."
-        />
+        <>
+            <MDBDatatable
+                entries={5}
+                search
+                hover
+                entriesOptions={[5, 10, 25, 100]}
+                data={{
+                    columns: cols,
+                    rows: rows
+                }}
+                onRowClick={
+                    (rowData) => {
+                        window.open("https://www.ncbi.nlm.nih.gov/nucleotide/"+rowData[0], "_blank");
+                    }
+                }
+                style={{ backgroundColor: "#242424", color: "#fff", borderRadius: "3px" }}
+                dark
+                borderless
+                allText="100"
+                searchInputProps={{contrast: true}}
+                noFoundMessage={blastSrc == null || blastSrc[1].length == 0 ? "Blast failed.": "No Results Found. Try indexing to the first page if you are searching, otherwise there is no results."}
+            />
+            <center>
+            <p style={{color: "#6a65fc"}} className="pb-0 mb-0 sub-p">Click on a row to open the corresponding sequence at NCBI.</p>
+            </center>
+            {blastSrc && <MDBBtn 
+                color="link"
+                className="mt-1 mb-1"
+                style={{color: "#39C0ED", backgroundColor: "#242424", width: "100%"}}
+                href={"https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=GET&RID="+blastSrc[0]} 
+                target="_blank"
+            ><MDBIcon icon="external-link-alt" className="me-2"/>Open Search Results At NCBI</MDBBtn>}
+        </>
     );
 }
 
@@ -163,7 +183,11 @@ export default function Results({ closeBtn }) {
 
         const blastN_NRNT = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-NRNT"]);
-            runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
+
+            //uncomment next line if testing with results
+            runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", aftermath: () => setMessageDone("BlastN-NRNT")});
+
+            // runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
         }
 
         const blastN_EST = () => {
@@ -197,10 +221,15 @@ export default function Results({ closeBtn }) {
     //check for updates on status
     useEffect(() => {
 
-        if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null || PDBLink == null) 
-        {
+        //uncomment following if testing with results
+        if (blastn_nrnt == null){
             return;
         }
+
+        // if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null || PDBLink == null) 
+        // {
+        //     return;
+        // }
 
         setLoadLog(loadLog => [...loadLog, "----------All Done!----------"]);
         setLoading(false);
@@ -234,7 +263,7 @@ export default function Results({ closeBtn }) {
                                 color="link"
                                 className="mt-1 mb-1"
                                 style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
-                            >DNA Sequence</MDBBtn>
+                            ><MDBIcon icon="dna" className="me-2"/>DNA Sequence</MDBBtn>
                             <MDBCollapse show={openDNA}>
                                 <h4 style={{color: "#6a65fc"}}>DNA Sequence</h4>
                                 <textarea
@@ -268,7 +297,7 @@ export default function Results({ closeBtn }) {
                                 color="link"
                                 className="mt-1 mb-1"
                                 style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
-                            >Protein Sequence</MDBBtn>
+                            ><MDBIcon icon="prescription-bottle" className="me-2"/>Protein Sequence</MDBBtn>
                             <MDBCollapse show={openProtein}>
                                 <MDBRow>
                                     <MDBCol>
@@ -400,6 +429,12 @@ export default function Results({ closeBtn }) {
                                                 .then(res => res.json())
                                                 .then(data => {
                                                     const m = new Map(Object.entries(data));
+                                                    console.log(data);
+                                                    if (data.length == 0)
+                                                    {
+                                                        setBioGRIDID("NONE");
+                                                        return;
+                                                    }
                                                     setBioGRIDID(m.get(m.keys().next().value)["BIOGRID_ID_B"]);
                                                 })
                                         }}
@@ -409,12 +444,12 @@ export default function Results({ closeBtn }) {
                                     </MDBCol>
                                 </MDBRow>
                             <MDBCollapse show={locus != null && bioGRIDID != null}>
-                                <MDBBtn href={"https://thebiogrid.org/"+bioGRIDID+"/summary/arabidopsis-thaliana/pag1.html"}
+                                {bioGRIDID != "NONE" ? <MDBBtn href={"https://thebiogrid.org/"+bioGRIDID+"/summary/arabidopsis-thaliana/pag1.html"}
                                     target="_blank"
                                     color="link"
                                     className="mt-1 mb-1"
                                     style={{color: "#39C0ED", backgroundColor: "#242424", width: "100%"}}
-                                ><MDBIcon icon="external-link-alt" className="me-2"/>Open BioGRID in new tab</MDBBtn>
+                                ><MDBIcon icon="external-link-alt" className="me-2"/>Open BioGRID in new tab</MDBBtn> : <center><p  style={{color: "#6a65fc"}}>No results for BioGRID found!</p></center>}
                                 {/* <iframe src={"http://bar.utoronto.ca/efp/cgi-bin/efpWeb.cgi?primaryGene="+locus+"&mode=Absolute&dataSource=Developmental_Map"} width="100%" height="700px" style={{borderRadius: "5px"}} /> */}
                                 <MDBBtn href={"http://bar.utoronto.ca/efp/cgi-bin/efpWeb.cgi?primaryGene="+locus+"&mode=Absolute&dataSource=Developmental_Map"}
                                     target="_blank"
@@ -436,9 +471,9 @@ export default function Results({ closeBtn }) {
                         <center>
                             <MDBBtn onClick={() => setOpenLoadLog(!openLoadLog)}
                                 color="link"
-                                className="mt-1 mb-1"
+                                className="mt-3 mb-1"
                                 style={{color: "#6a65fc", backgroundColor: "#242424", width: "100%"}}
-                            >Log</MDBBtn>
+                            ><MDBIcon icon="align-left" className="me-2"/>Load Log</MDBBtn>
                             <MDBCollapse show={openLoadLog}>
                             <textarea
                                 readOnly
