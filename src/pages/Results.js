@@ -1,4 +1,4 @@
-import { MDBBtn, MDBIcon, MDBTextArea, MDBContainer, MDBDatatable, MDBModal, MDBModalBody, MDBModalContent, MDBModalDialog, MDBModalHeader, MDBModalTitle, MDBBtnGroup, MDBRow, MDBCol, MDBSpinner, MDBCollapse } from "mdb-react-ui-kit";
+import { MDBBtn, MDBIcon, MDBTextArea, MDBProgress, MDBProgressBar, MDBContainer, MDBDatatable, MDBModal, MDBModalBody, MDBModalContent, MDBModalDialog, MDBModalHeader, MDBModalTitle, MDBBtnGroup, MDBRow, MDBCol, MDBSpinner, MDBCollapse } from "mdb-react-ui-kit";
 import { useEffect, useState } from "react";
 import { useElapsedTime } from "use-elapsed-time";
 
@@ -185,9 +185,9 @@ export default function Results({ closeBtn }) {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-NRNT"]);
 
             //uncomment next line if testing with results
-            runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", aftermath: () => setMessageDone("BlastN-NRNT")});
+            // runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", aftermath: () => setMessageDone("BlastN-NRNT")});
 
-            // runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
+            runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
         }
 
         const blastN_EST = () => {
@@ -219,17 +219,17 @@ export default function Results({ closeBtn }) {
     }, [])
 
     //check for updates on status
+
     useEffect(() => {
-
         //uncomment following if testing with results
-        if (blastn_nrnt == null){
-            return;
-        }
-
-        // if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null || PDBLink == null) 
-        // {
+        // if (blastn_nrnt == null){
         //     return;
         // }
+
+        if (blastn_nrnt == null || blastn_est == null || blastx_nrnt == null || blastp_nrnt == null || blastp_homoSapiens == null || PDBLink == null) 
+        {
+            return;
+        }
 
         setLoadLog(loadLog => [...loadLog, "----------All Done!----------"]);
         setLoading(false);
@@ -239,8 +239,8 @@ export default function Results({ closeBtn }) {
         <MDBModal show staticBackdrop>
             <MDBModalDialog size="xl" style={{color: "#000"}}>
                 <MDBModalContent style={{ backgroundColor: "#202020", color: "#fff" }}>
-                    <MDBModalBody>
-                        <MDBContainer className="d-flex">
+                    <MDBModalBody className="mt-4 pt-0 pb-0 mb-0">
+                        <MDBContainer className="d-flex mt-0 pt-0 pb-0 mb-0">
                             <MDBModalTitle style={{color: "#6a65fc"}} className="me-0 ms-0">
                                 {loading ? "BLASTing..." : "BLAST Results"}
                             </MDBModalTitle>
@@ -250,10 +250,14 @@ export default function Results({ closeBtn }) {
                     <MDBModalBody>
                     {loading ? <>
                         <center>
-                            <MDBSpinner color="white" className="mb-4 mt-4" />
-                            <p className="mb-0">{getTimeFormatted()} - It may take a while to run all the BLAST searches required.</p>
+                            <MDBProgress style={{width: "100%", height: "3px"}} className="mt-0 pt-0 pb-0 mb-0">
+                                <MDBProgressBar style={{backgroundColor: "#6a65fc"}} width={loadLog.filter(value => value.toLowerCase().includes("done")).length / 6 * 100} valuemin={0} valuemax={100} />
+                            </MDBProgress>
+                            <MDBSpinner color="white" className="mb-2 mt-4" />
+                            <h5>{getTimeFormatted()}</h5>
+                            <p className="mb-0">Please be patient - It may take up to 15 mintues</p>
                             <p className="sub-p">Please leave this page open - it will automatically refresh when done</p>
-                            <iframe className="pt-4" src={"https://slither.io"} width="90%" height="450px" />
+                            <iframe className="pt-4" src={"https://slither.io"} style={{borderRadius: "3px"}} width="90%" height="450px" />
                             <p className="sub-p">The game will disconnect when done.</p>
                         </center>
                     </> :
