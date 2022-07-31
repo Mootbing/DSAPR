@@ -187,12 +187,12 @@ export default function Results({ closeBtn }) {
             //uncomment next line if testing with results
             // runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", aftermath: () => setMessageDone("BlastN-NRNT")});
 
-            runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=T", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
+            runBLAST({db: "nt", program: "blastn", qSequence: DNASequence, setResult: setBlastn_nrnt, additionalParams: "&FILTER=L&FILTER=m&EXPECT=10", next: blastN_EST, aftermath: () => setMessageDone("BlastN-NRNT")});
         }
 
         const blastN_EST = () => {
             setLoadLog(loadLog => [...loadLog, new Date(Date.now()) +" - Initiated BlastN-EST"]);
-            runBLAST({db: "est", program: "blastn", qSequence: DNASequence, setResult: setBlastn_est, additionalParams: "&FILTER=T", next: blastX, aftermath: () => setMessageDone("BlastN-EST")});
+            runBLAST({db: "est", program: "blastn", qSequence: DNASequence, setResult: setBlastn_est, additionalParams: "&FILTER=L&FILTER=m&EXPECT=10", next: blastX, aftermath: () => setMessageDone("BlastN-EST")});
         }
 
         const blastX = () => {

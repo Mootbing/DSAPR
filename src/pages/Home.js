@@ -197,17 +197,15 @@ export default function Home() {
             </MDBBtn>
           </MDBRow>
           <p className="pb-0 mb-0 sub-p">BLASToff is not an official blast, nor should you use it in place of your research. It is meant as a tool for checking DSAP.</p>
-          <i className="mb-5 pt-0 mt-0 sub-p">If you aren't a teacher/TA, do your work &#128544;.</i>
+          <i className="mb-5 pt-0 mt-0 sub-p">Made for TAs/Teachers; if you aren't a teacher/TA, do your work!</i>
           </center>
         </MDBContainer>
       </MDBContainer>
 
-      <MDBFooter>
-        <MDBRow>
-          <MDBCol>
-            <MDBNavbarLink href="https://github.com/Mootbing/DSAPR" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>To GitHub</u></MDBNavbarLink>
-          </MDBCol>
-        </MDBRow>
+      <MDBFooter className="d-flex justify-content-evenly">
+        <MDBNavbarLink href="https://github.com/Mootbing/DSAPR" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>View Code On Github</u></MDBNavbarLink>
+        <MDBNavbarLink href="https://github.com/Mootbing/DSAPR/issues" target="_blank" style={{color: "#737373"}} className="ps-5 d-flex"><u>Report Bugs / View Known Bugs</u></MDBNavbarLink>
+        <MDBNavbarLink style={{color: "#737373", textDecoration: "none"}}>Version 1.1</MDBNavbarLink>
       </MDBFooter>
     </div>
   );
